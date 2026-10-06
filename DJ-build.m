@@ -58,6 +58,7 @@ Mat := Matrix(Q, 7, 12, rows);
 // ==========================================
 // STEP 5: Reconstruct the Quadrics W
 // ==========================================
+// We compute the solution of the linear system, finding the five quadrics of P^4
 NS := Nullspace(Transpose(Mat));
 
 print "=== 5-DIMENSIONAL SYSTEM W ===";
