@@ -3,7 +3,8 @@
 // ==========================================
 Q := Rationals();
 R2<x,y,z> := PolynomialRing(Q, 3);
-R4<y0,y1,y2,y3,y4> := PolynomialRing(Q, 5);
+R4<[u]> := ProjectiveSpace(Q, 4);
+R := CoordinateRing(R4);
 
 // Define the points
 e1:=[0,1,0]; e2:=[0,0,1]; e3:=[1,1,1]; e4:=[1,2,3]; e5:=[1,-1,2];
@@ -26,14 +27,14 @@ Y_seq := [Y0, Y1, Y2, Y3, Y4];
 // ==========================================
 // STEP 2: The 12 Monomials in P4 containing L
 // ==========================================
-all_quads := MonomialsOfDegree(R4, 2);
-bad_quads := [y3^2, y3*y4, y4^2];
+all_quads := MonomialsOfDegree(R, 2);
+bad_quads := [u[4]^2, u[4]*u[5], u[5]^2];
 M := [m : m in all_quads | not m in bad_quads]; 
 
 // ==========================================
 // STEP 3: Pull back to P2 and divide by C
 // ==========================================
-phi := hom< R4 -> R2 | Y_seq >;
+phi := hom< R -> R2 | Y_seq >;
 V := [ ExactQuotient(phi(m), C) : m in M ];
 
 // ==========================================
@@ -62,7 +63,7 @@ Mat := Matrix(Q, 7, 12, rows);
 NS := Nullspace(Transpose(Mat));
 
 print "=== 5-DIMENSIONAL SYSTEM W ===";
-print "Dimension of the System W (should be 5):", Dimension(NS);
+print "Dimension of the System W:", Dimension(NS);
 
 
 W_quadrics := [];
@@ -70,6 +71,6 @@ i:=0;
 for vec in Basis(NS) do
     quadric := &+[ vec[i] * M[i] : i in [1..12] ];
     Append(~W_quadrics, quadric);
-    printf "W_%o = %o\n", i, quadric;
+    printf "W_%o := %o;\n", i, quadric;
     i:= i+1;
 end for;
