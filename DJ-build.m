@@ -7,22 +7,36 @@ R4<[u]> := ProjectiveSpace(Q, 4);
 R := CoordinateRing(R4);
 
 // Define the points
-e1:=[0,1,0]; e2:=[0,0,1]; e3:=[1,1,1]; e4:=[1,2,3]; e5:=[1,-1,2];
-q:=[2,1,2];
-
-// The generic conic C: d*x^2 + e*x*y + f*x*z + g*y*z = 0 (no y^2, z^2 since e1, e2 are on it)
-// We find the coefficients passing through e3, e4, e5;
-// Solving gives the conic:
-C := 7*x^2 - 11*x*y + x*z + 3*y*z;
-
+pts := [
+    [0,1,0],
+    [0,0,1],
+    [1,1,1],
+    [1,2,3],
+    [1,-2,5]
+];
+q:=[2,1,3];
+monomials := [x^2, y^2, z^2, x*y, x*z, y*z];
+eval_matrix := Matrix(Q, [ [Evaluate(m, pt) : m in monomials] : pt in pts ]);
+N := Nullspace(Transpose(eval_matrix));
+if Dimension(N) eq 0 then
+    error "No conic passes through all given points.";
+end if;
+// Reconstruct the polynomial in R from the nullspace basis vector
+v := Basis(N)[1];
+C := &+[ v[i] * monomials[i] : i in [1..#monomials] ];
 // The 5 cubics defining the anticanonical map
-Y0 := x*C;
-Y1 := y*C;
-Y2 := z*C;
-// We need two more general cubics passing through e1..e5
-Y3 := 4*x^2*y + x*y^2 - 5*x^2*z; 
-Y4 := 3*x^2*z + y*z^2 - 4*x*y*z;
-Y_seq := [Y0, Y1, Y2, Y3, Y4];
+monomials_deg3 := [x^3, x^2*y, x^2*z, x*y^2, x*y*z, x*z^2, y^3, y^2*z, y*z^2, z^3];
+eval_matrix3 := Matrix(Q, [ [Evaluate(m, pt) : m in monomials_deg3] : pt in pts ]);
+// W is the 5-dimensional space of cubics vanishing at the 5 points
+W := Nullspace(Transpose(eval_matrix3));
+Y_seq := [];
+Y_seq[1]:=x*C;
+Y_seq[2]:=y*C;
+Y_seq[3]:=z*C;
+cubic1:=Basis(W)[1];
+cubic2:=Basis(W)[2];
+Y_seq[4]:=&+[ cubic1[i] * monomials_deg3[i] : i in [1..10] ];
+Y_seq[5]:=&+[ cubic2[i] * monomials_deg3[i] : i in [1..10] ];
 
 // ==========================================
 // STEP 2: The 12 Monomials in P4 containing L
@@ -36,6 +50,7 @@ M := [m : m in all_quads | not m in bad_quads];
 // ==========================================
 phi := hom< R -> R2 | Y_seq >;
 V := [ ExactQuotient(phi(m), C) : m in M ];
+V;
 
 // ==========================================
 // STEP 4: Set up the Linear System 
